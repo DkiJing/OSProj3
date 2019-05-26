@@ -151,7 +151,7 @@ buffer_read (block_sector_t sector, void *target)
 }
 
 void
-buffer__write (block_sector_t sector, const void *source)
+buffer_write (block_sector_t sector, const void *source)
 {
   lock_acquire (&buffer_cache_lock);
 
