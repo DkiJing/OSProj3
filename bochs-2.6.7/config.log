@@ -423,7 +423,7 @@ configure:8641: checking whether stripping libraries is possible
 configure:8646: result: yes
 configure:8744: checking for shl_load
 configure:8744: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccqxetZQ.o: In function `main':
+/tmp/ccsctE5K.o: In function `main':
 /home/jingjing/Desktop/os/CS302-OS-Project1/bochs-2.6.7/conftest.c:54: undefined reference to `shl_load'
 collect2: error: ld returned 1 exit status
 configure:8744: $? = 1
@@ -529,7 +529,7 @@ configure: failed program was:
 configure:8782: result: no
 configure:8787: checking for dlopen
 configure:8787: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccYekOHW.o: In function `main':
+/tmp/cc7VPtqH.o: In function `main':
 /home/jingjing/Desktop/os/CS302-OS-Project1/bochs-2.6.7/conftest.c:54: undefined reference to `dlopen'
 collect2: error: ld returned 1 exit status
 configure:8787: $? = 1
@@ -1766,7 +1766,7 @@ configure:20726: $? = 0
 configure:20726: result: yes
 configure:20738: checking for strrev
 configure:20738: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccxTKWi1.o: In function `main':
+/tmp/cc900LjY.o: In function `main':
 /home/jingjing/Desktop/os/CS302-OS-Project1/bochs-2.6.7/conftest.c:109: undefined reference to `strrev'
 collect2: error: ld returned 1 exit status
 configure:20738: $? = 1
@@ -1886,7 +1886,7 @@ configure: failed program was:
 configure:20738: result: no
 configure:20750: checking for stricmp
 configure:20750: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/cctaNS01.o: In function `main':
+/tmp/cchfRqVZ.o: In function `main':
 /home/jingjing/Desktop/os/CS302-OS-Project1/bochs-2.6.7/conftest.c:109: undefined reference to `stricmp'
 collect2: error: ld returned 1 exit status
 configure:20750: $? = 1
@@ -2047,7 +2047,7 @@ configure:20880: $? = 0
 configure:20880: result: yes
 configure:20892: checking for fseek64
 configure:20892: gcc -o conftest -g -O2   conftest.c  >&5
-/tmp/ccIyn7xk.o: In function `main':
+/tmp/ccaiXfCg.o: In function `main':
 /home/jingjing/Desktop/os/CS302-OS-Project1/bochs-2.6.7/conftest.c:122: undefined reference to `fseek64'
 collect2: error: ld returned 1 exit status
 configure:20892: $? = 1
@@ -3805,7 +3805,7 @@ conftest.c:168:8: warning: null argument where non-null required (argument 1) [-
         pthread_create(0,0,0,0); pthread_cleanup_pop(0);
         ^
 conftest.c:168:8: warning: null argument where non-null required (argument 3) [-Wnonnull]
-/tmp/ccSnu1Oi.o: In function `main':
+/tmp/ccnGFoW8.o: In function `main':
 /home/jingjing/Desktop/os/CS302-OS-Project1/bochs-2.6.7/conftest.c:166: undefined reference to `pthread_join'
 /home/jingjing/Desktop/os/CS302-OS-Project1/bochs-2.6.7/conftest.c:167: undefined reference to `__pthread_register_cancel'
 /home/jingjing/Desktop/os/CS302-OS-Project1/bochs-2.6.7/conftest.c:168: undefined reference to `pthread_create'
