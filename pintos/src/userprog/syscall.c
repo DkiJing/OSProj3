@@ -14,6 +14,7 @@
 #include "process.h"
 #include "pagedir.h"
 #include "syscall.h"
+#include "filesys/cache.h"
 
 // syscall array
 syscall_function syscalls[SYSCALL_NUMBER];
@@ -45,6 +46,30 @@ syscall_init (void)
   syscalls[SYS_SEEK] = sys_seek;
   syscalls[SYS_TELL] = sys_tell;
   syscalls[SYS_CLOSE] = sys_close;
+  syscalls[SYS_INVCACHE] = sys_invcache;
+  syscalls[SYS_CACHESTAT] = sys_cachestat;
+}
+
+static bool
+args_valid(uint32_t *args, int num_args)
+{
+  struct thread *t = thread_current();
+  int i;
+  for(i = 0; i < num_args + i; i++){
+    if(args == NULL || !(is_user_vaddr(args)) || pagedir_get_page(t->pagedir, args) == NULL)
+      return false;
+    args++;
+  }
+  return true;
+}
+
+static bool
+arg_addr_valid(void *arg)
+{
+  struct thread *t = thread_current();
+  if((arg == NULL) || !(is_user_vaddr(arg)) || pagedir_get_page(t->pagedir, arg) == NULL)
+    return false;
+  else return true;
 }
 
 // check whether page p and p+3 has been in kernel virtual memory
@@ -266,4 +291,20 @@ void sys_close(struct intr_frame * f) {
     list_remove(&openf->file_elem);
     free(openf);
   }
+}
+
+static void
+sys_invcache(uint32_t *args UNUSED, uint32_t *eax UNUSED)
+{
+  cache_invalidate(fs_device);
+}
+
+static void
+sys_cachestat(uint32_t *args UNUSED, uint32_t *eax UNUSED)
+{
+  if(!args_valid(args, 2) || !arg_addr_valid((void *) args[0]) || !arg_addr_valid((void *) args[1])){
+    *eax = -1;
+    return;
+  }
+  *eax = cache_get_stats(fs_device, (long long *)args[0], (long long *) args[1]);
 }

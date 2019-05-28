@@ -5,6 +5,7 @@
 #include "list.h"
 
 typedef void (*syscall_function) (struct intr_frame *);
+typedef void (*syscall_t) (uint32_t *, uint32_t *);
 #define SYSCALL_NUMBER 14
 
 void syscall_init (void);
@@ -28,6 +29,8 @@ void sys_write(struct intr_frame *);
 void sys_seek(struct intr_frame *);
 void sys_tell(struct intr_frame *);
 void sys_close(struct intr_frame *);
+static void sys_invcache(uint32_t *, uint32_t *);
+static void sys_cachestat(uint32_t *, uint32_t *);
 
 
 struct file_node * find_file(struct list *, int);

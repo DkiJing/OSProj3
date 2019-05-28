@@ -182,3 +182,15 @@ inumber (int fd)
 {
   return syscall1 (SYS_INUMBER, fd);
 }
+
+void
+invcache(void)
+{
+  syscall0(SYS_INVCACHE);
+}
+
+int
+cachestat(const long long *access_count, const long long *hit_count, const long long *miss_count)
+{
+  return syscall3(SYS_CACHESTAT, access_count, hit_count, miss_count);
+}
