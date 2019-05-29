@@ -5,12 +5,14 @@
 #include "filesys/filesys.h"
 #include "filesys/inode.h"
 #include "threads/malloc.h"
+#include "threads/synch.h"
 
 /* A directory. */
 struct dir 
   {
     struct inode *inode;                /* Backing store. */
     off_t pos;                          /* Current position. */
+    struct lock dir_lock;               /* Directory's lock */
   };
 
 /* A single directory entry. */
@@ -233,4 +235,75 @@ dir_readdir (struct dir *dir, char name[NAME_MAX + 1])
         } 
     }
   return false;
+}
+
+/* Acquire directory's lock */
+void
+dir_acquire_lock(struct dir *dir)
+{
+  lock_acquire(&(dir->dir_lock));
+}
+
+/* Release directory's lock */
+void
+dir_release_lock(struct dir *dir)
+{
+  lock_release(&(dir->dir_lock));
+}
+
+/* Tokenize file name from *srcp into part. Return 1 suffessful, 0 end of string, -1 filename too long */
+static int
+get_next_part(char part[NAME_MAX + 1], const char **srcp)
+{
+  const char *src = *srcp;
+  char *dst = part;
+  /* skip leading slashes */
+  while(*src == '/'){
+    src++;
+  }
+  /* end of string */
+  if(*src == '\0') return 0;
+  /* copy NAME_MAX from src to dst */
+  while(*src != '/' && *src != '\0'){
+    if(dst < part + NAME_MAX){
+      *dst++;
+      *dst = *src;
+    }
+    /* file name too long */
+    else return -1;
+    src++;
+  }
+  *dst = '\0';
+  *srcp = src;
+  return 1;
+}
+
+/* extract directory and filename into pointers */
+bool
+split_directory_and_filename(const char *path, char *directory, char *filename)
+{ 
+  if(strlen(path) == 0) return false;
+  int status;
+  char token[NAME_MAX + 1];
+  char prev_token[NAME_MAX + 1];
+  if(path[0] == '/'){
+    *directory++;
+    *directory = '/';
+  }
+  token[0] = '\0';
+  prev_token[0] = '\0';
+  while((status = get_next_part(token, &path)) != 0){
+    if(status == -1) return false;
+    int prev_length = strlen(prev_token);
+    if(prev_length > 0){
+      memcpy(directory, prev_token, sizeof (char) * prev_length);
+      directory[prev_length] = '/';
+      directory += prev_length + 1;
+    }
+    memcpy(prev_token, token, sizeof (char) * strlen(token));
+    prev_token[strlen(token)] = '\0';
+  }
+  *directory = '\0';
+  memcpy(filename, token, sizeof (char) * (strlen(token) + 1));
+  return true;
 }

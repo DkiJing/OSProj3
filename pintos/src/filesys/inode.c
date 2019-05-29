@@ -5,20 +5,34 @@
 #include <string.h>
 #include "filesys/filesys.h"
 #include "filesys/free-map.h"
+#include "filesys/cache.h"
 #include "threads/malloc.h"
+#include "threads/synch.h"
 
 /* Identifies an inode. */
 #define INODE_MAGIC 0x494e4f44
+
+/* Block Sector Counts */
+#define DIRECT_BLOCK_COUNT 123
+#define INDIRECT_BLOCK_COUNT 128
 
 /* On-disk inode.
    Must be exactly BLOCK_SECTOR_SIZE bytes long. */
 struct inode_disk
   {
-    block_sector_t start;               /* First data sector. */
+    block_sector_t direct_blocks[DIRECT_BLOCK_COUNT];
+    block_sector_t indirect_block;
+    block_sector_t doubly_indirect_block;
+    bool is_dir;                        /* Indicator of directory */
     off_t length;                       /* File size in bytes. */
     unsigned magic;                     /* Magic number. */
-    uint32_t unused[125];               /* Not used. */
   };
+
+/* Indirect_block structure */
+struct indirect_block_sector
+{
+  block_sector_t block[INDIRECT_BLOCK_COUNT];
+};
 
 /* Returns the number of sectors to allocate for an inode SIZE
    bytes long. */
@@ -39,6 +53,17 @@ struct inode
     struct inode_disk data;             /* Inode content. */
   };
 
+/* read inode_disk from disk and free memory */
+struct inode_disk *
+get_inode_disk(const struct inode *inode)
+{
+  ASSERT(inode != NULL);
+  
+  struct inode_disk *disk_inode = malloc(sizeof *disk_inode);
+  cache_read(fs_divice, inode_get_inumber(inode), (void *)disk_inode, 0, BLOCK_SECTOR_SIZE);
+  return disk_inode;
+}
+
 /* Returns the block device sector that contains byte offset POS
    within INODE.
    Returns -1 if INODE does not contain data for a byte at offset
@@ -47,10 +72,37 @@ static block_sector_t
 byte_to_sector (const struct inode *inode, off_t pos) 
 {
   ASSERT (inode != NULL);
-  if (pos < inode->data.length)
-    return inode->data.start + pos / BLOCK_SECTOR_SIZE;
-  else
-    return -1;
+  block_sector_t sector = -1;
+  struct inode_disk *disk_inode = get_inode_disk(inode);  
+
+  if (pos < disk_inode->length){
+    off_t index = pos / BLOCK_SECTOR_SIZE;
+    /* direct block */
+    if(index < DIRECT_BLOCK_COUNT)
+      sector = disk_inode->direct_blocks[index];
+    /* indirect block */
+    else if(index < DIRECT_BLOCK_COUNT + INDIRECT_BLOCK_COUNT){
+      index -= DIRECT_BLOCK_COUNT;
+      struct indirect_block_sector indirect_block;
+      cache_read(fs_device, disk_inode->indirect_block, &indirect_block, 0, BLOCK_SECTOR_SIZE);
+      sector = indirect_block.block[index];
+    }
+    /* doubly indirect block */
+    else{
+      index -= (DIRECT_BLOCK_COUNT + INDIRECT_BLOCK_COUNT);
+      struct indirect_block_sector indirect_block;
+    
+      /* get doubly indirect and indirect block index */
+      int did_index = index / INDIRECT_BLOCK_COUNT;
+      int id_index = index % INDIRECT_BLOCK_COUNT;
+      
+      cache_read(fs_device, disk_inode->doubly_indirect_block, &indirect_block, 0, BLOCK_SECTOR_SIZE);
+      cache_read(fs_device, indirect_block.block[did_index], &indirect_block, 0, BLOCK_SECTOR_SIZE);
+      sector = indirect_block.block[id_index];
+    }
+  }
+  free(disk_inode);
+  return sector;
 }
 
 /* List of open inodes, so that opening a single inode twice

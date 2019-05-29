@@ -26,5 +26,10 @@ bool dir_lookup (const struct dir *, const char *name, struct inode **);
 bool dir_add (struct dir *, const char *name, block_sector_t);
 bool dir_remove (struct dir *, const char *name);
 bool dir_readdir (struct dir *, char name[NAME_MAX + 1]);
+bool split_directory_and_filename(const char *path, char *directory, char *filename);
+
+/* Directory locks */
+void dir_acquire_lock(struct dir *dir);
+void dir_release_lock(struct dir *dir);
 
 #endif /* filesys/directory.h */
